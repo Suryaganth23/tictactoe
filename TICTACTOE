@@ -1,0 +1,95 @@
+import { useState } from 'react'
+import { Button } from "/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "/components/ui/card"
+import { X, Circle } from 'lucide-react'
+
+type CellValue = 'X' | 'O' | null
+
+export default function TicTacToe() {
+  const [board, setBoard] = useState<CellValue[]>(Array(9).fill(null))
+  const [isXNext, setIsXNext] = useState(true)
+  const winner = calculateWinner(board)
+
+  const handleClick = (index: number) => {
+    if (winner || board[index]) return
+
+    const newBoard = [...board]
+    newBoard[index] = isXNext ? 'X' : 'O'
+    setBoard(newBoard)
+    setIsXNext(!isXNext)
+  }
+
+  const resetGame = () => {
+    setBoard(Array(9).fill(null))
+    setIsXNext(true)
+  }
+
+  const renderCell = (index: number) => {
+    const value = board[index]
+    return (
+      <button
+        onClick={() => handleClick(index)}
+        disabled={!!winner || !!value}
+        className={`w-20 h-20 flex items-center justify-center text-4xl font-bold border border-gray-300 rounded-lg
+          ${!value && !winner ? 'hover:bg-gray-100' : ''}
+          ${value === 'X' ? 'text-blue-600' : ''}
+          ${value === 'O' ? 'text-red-600' : ''}`}
+      >
+        {value === 'X' && <X className="w-10 h-10" />}
+        {value === 'O' && <Circle className="w-10 h-10" />}
+      </button>
+    )
+  }
+
+  const getStatus = () => {
+    if (winner) {
+      return `Winner: ${winner}`
+    }
+    if (board.every(cell => cell)) {
+      return 'Game ended in a draw!'
+    }
+    return `Next player: ${isXNext ? 'X' : 'O'}`
+  }
+
+  return (
+    <Card className="w-full max-w-md mx-auto mt-8">
+      <CardHeader>
+        <CardTitle className="text-2xl font-bold text-center">Tic Tac Toe</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="mb-4 text-center text-lg font-semibold">
+          {getStatus()}
+        </div>
+        
+        <div className="grid grid-cols-3 gap-2 mb-6">
+          {Array(9).fill(null).map((_, index) => (
+            <div key={index}>
+              {renderCell(index)}
+            </div>
+          ))}
+        </div>
+
+        <div className="flex justify-center">
+          <Button onClick={resetGame} variant="outline">
+            Reset Game
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
+
+function calculateWinner(squares: CellValue[]): CellValue | null {
+  const lines = [
+    [0, 1, 2], [3, 4, 5], [6, 7, 8], // rows
+    [0, 3, 6], [1, 4, 7], [2, 5, 8], // columns
+    [0, 4, 8], [2, 4, 6]             // diagonals
+  ]
+
+  for (const [a, b, c] of lines) {
+    if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
+      return squares[a]
+    }
+  }
+  return null
+}
